@@ -1,0 +1,5 @@
+export enum RolProyecto {
+  PROPIETARIO = 'PROPIETARIO',
+  ADMINISTRADOR = 'ADMINISTRADOR',
+  MIEMBRO = 'MIEMBRO',
+}

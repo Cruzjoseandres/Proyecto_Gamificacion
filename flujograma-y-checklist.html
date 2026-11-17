@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuestFlow — Flujograma de Uso y Checklist de Requerimientos</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #F5F5F7;
+      --bg-elevated: rgba(255, 255, 255, 0.86);
+      --card: #FFFFFF;
+      --card-subtle: #F9F9FB;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-strong: rgba(0, 0, 0, 0.14);
+      --text: #1D1D1F;
+      --text-muted: #6E6E73;
+      --primary: #0071E3;
+      --primary-soft: rgba(0, 113, 227, 0.1);
+      --primary-border: rgba(0, 113, 227, 0.28);
+      --success: #16A34A;
+      --success-soft: rgba(22, 163, 74, 0.1);
+      --success-border: rgba(22, 163, 74, 0.28);
+      --purple: #6D28D9;
+      --purple-soft: rgba(109, 40, 217, 0.1);
+      --purple-border: rgba(109, 40, 217, 0.28);
+      --amber: #D97706;
+      --amber-soft: rgba(217, 119, 6, 0.1);
+      --amber-border: rgba(217, 119, 6, 0.28);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03);
+      --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.07);
+      --arrow: #86868B;
+      --code-bg: rgba(0, 0, 0, 0.045);
+    }
+
+    html.oscuro {
+      --bg: #09090B;
+      --bg-elevated: rgba(24, 24, 27, 0.85);
+      --card: #121216;
+      --card-subtle: #18181D;
+      --border: rgba(255, 255, 255, 0.09);
+      --border-strong: rgba(255, 255, 255, 0.18);
+      --text: #F5F5F7;
+      --text-muted: #A1A1AA;
+      --primary: #2997FF;
+      --primary-soft: rgba(41, 151, 255, 0.14);
+      --primary-border: rgba(41, 151, 255, 0.35);
+      --success: #34D399;
+      --success-soft: rgba(52, 211, 153, 0.12);
+      --success-border: rgba(52, 211, 153, 0.32);
+      --purple: #A78BFA;
+      --purple-soft: rgba(167, 139, 250, 0.14);
+      --purple-border: rgba(167, 139, 250, 0.35);
+      --amber: #FBBF24;
+      --amber-soft: rgba(251, 191, 36, 0.12);
+      --amber-border: rgba(251, 191, 36, 0.32);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35), 0 6px 18px rgba(0, 0, 0, 0.25);
+      --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.45);
+      --arrow: #71717A;
+      --code-bg: rgba(255, 255, 255, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      transition: background-color 220ms cubic-bezier(0.22, 1, 0.36, 1), color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background-color: var(--bg-elevated);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .brand-sub {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .segmented {
+      display: inline-flex;
+      padding: 3px;
+      border-radius: 11px;
+      background-color: var(--code-bg);
+      border: 1px solid var(--border);
+      gap: 2px;
+    }
+
+    .btn-tab, .btn-pill {
+      appearance: none;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: transform 120ms ease-out, background-color 180ms ease-out, color 180ms ease-out, border-color 180ms ease-out;
+    }
+
+    .btn-tab:active, .btn-pill:active, .flow-node:active {
+      transform: scale(0.97);
+    }
+
+    .btn-tab.activo {
+      background-color: var(--card);
+      color: var(--text);
+      border-color: var(--border);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      font-weight: 600;
+    }
+
+    .btn-pill {
+      background-color: var(--card);
+      color: var(--text);
+      border-color: var(--border);
+      border-radius: 10px;
+      padding: 7px 13px;
+    }
+
+    .btn-pill:hover {
+      border-color: var(--border-strong);
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #FFFFFF;
+      border-color: transparent;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.92;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px 64px;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+
+    .section-card {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      padding: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .section-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .overline {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--primary);
+      margin: 0 0 4px;
+    }
+
+    h2 {
+      font-size: 21px;
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      margin: 0;
+    }
+
+    .section-desc {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin: 4px 0 0;
+    }
+
+    /* Flowchart grid */
+    .flow-workspace {
+      display: grid;
+      grid-template-columns: 1.35fr 0.95fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .flow-workspace {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .flow-diagram {
+      background-color: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .flow-node {
+      width: 100%;
+      max-width: 540px;
+      text-align: left;
+      background-color: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+      transition: transform 140ms ease-out, border-color 180ms ease-out, box-shadow 180ms ease-out;
+    }
+
+    .flow-node:hover {
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-md);
+    }
+
+    .flow-node.seleccionado {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-soft), var(--shadow-md);
+    }
+
+    .node-badge {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background-color: var(--primary-soft);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .node-badge.purple {
+      background-color: var(--purple-soft);
+      color: var(--purple);
+    }
+
+    .node-badge.success {
+      background-color: var(--success-soft);
+      color: var(--success);
+    }
+
+    .node-badge.amber {
+      background-color: var(--amber-soft);
+      color: var(--amber);
+    }
+
+    .node-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      width: 100%;
+    }
+
+    .node-title {
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .node-route {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      color: var(--text-muted);
+      background-color: var(--code-bg);
+      padding: 2px 7px;
+      border-radius: 6px;
+    }
+
+    .node-sub {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: var(--arrow);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 0;
+    }
+
+    .decision-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: 1px dashed var(--primary-border);
+      background-color: var(--primary-soft);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 600;
+      margin: 4px 0;
+    }
+
+    .branch-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      width: 100%;
+      max-width: 540px;
+    }
+
+    @media (max-width: 600px) {
+      .branch-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .loop-note {
+      font-size: 11.5px;
+      color: var(--purple);
+      background-color: var(--purple-soft);
+      border: 1px solid var(--purple-border);
+      padding: 5px 11px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* Inspector panel */
+    .inspector {
+      position: sticky;
+      top: 82px;
+      background-color: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .inspector-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--primary);
+      background-color: var(--primary-soft);
+      border: 1px solid var(--primary-border);
+      padding: 3px 9px;
+      border-radius: 999px;
+      width: fit-content;
+    }
+
+    .inspector h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .inspector-box {
+      background-color: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+    }
+
+    .inspector-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .inspector-list {
+      margin: 0;
+      padding-left: 18px;
+      font-size: 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .code-chip {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11.5px;
+      background-color: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+
+    .inspector-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      padding-top: 6px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* Checklist section */
+    .summary-bar {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    @media (max-width: 760px) {
+      .summary-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .stat-box {
+      background-color: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .stat-val {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.025em;
+      margin-top: 2px;
+    }
+
+    .progress-track {
+      height: 10px;
+      border-radius: 999px;
+      background-color: var(--code-bg);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      border-radius: 999px;
+      transition: width 320ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      background-color: var(--card-subtle);
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      padding: 15px 16px;
+      cursor: pointer;
+      transition: border-color 160ms ease-out, background-color 160ms ease-out, transform 120ms ease-out;
+    }
+
+    .check-item:hover {
+      border-color: var(--border-strong);
+    }
+
+    .check-item:active {
+      transform: scale(0.995);
+    }
+
+    .check-item.marcado {
+      border-color: var(--success-border);
+    }
+
+    .checkbox-box {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      border: 1.5px solid var(--border-strong);
+      background-color: var(--card);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+      color: #FFFFFF;
+      transition: background-color 160ms ease-out, border-color 160ms ease-out;
+    }
+
+    .check-item.marcado .checkbox-box {
+      background-color: var(--success);
+      border-color: var(--success);
+    }
+
+    .check-body {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .check-top {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .check-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background-color: var(--primary-soft);
+      color: var(--primary);
+    }
+
+    .check-cat {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .status-pill {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 9px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .status-pill.ok {
+      background-color: var(--success-soft);
+      color: var(--success);
+      border: 1px solid var(--success-border);
+    }
+
+    .status-pill.pend {
+      background-color: var(--amber-soft);
+      color: var(--amber);
+      border: 1px solid var(--amber-border);
+    }
+
+    .check-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .check-evidence {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin: 4px 0 8px;
+    }
+
+    .files-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .oculto {
+      display: none !important;
+    }
+
+    @media print {
+      .topbar { position: static; }
+      .actions, .inspector-nav, .filters-row { display: none !important; }
+      .flow-workspace { grid-template-columns: 1fr; }
+      .inspector { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg width="30" height="30" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+          <rect x="1.5" y="1.5" width="25" height="25" rx="7" stroke="currentColor" stroke-opacity="0.2" stroke-width="1.5" fill="currentColor" fill-opacity="0.04"/>
+          <circle cx="14" cy="14" r="6" stroke="currentColor" stroke-width="1.75"/>
+          <circle cx="14" cy="14" r="2.25" fill="#0071E3"/>
+        </svg>
+        <div>
+          <h1 class="brand-title">QuestFlow — Flujograma y Checklist de Requerimientos</h1>
+          <p class="brand-sub">Plataforma Gamificada de Actividades y Proyectos (Feria de Sistemas)</p>
+        </div>
+      </div>
+
+      <div class="actions">
+        <div class="segmented" role="tablist" aria-label="Vista principal">
+          <button class="btn-tab activo" data-vista="todo" onclick="cambiarVista('todo')">Vista completa</button>
+          <button class="btn-tab" data-vista="flujo" onclick="cambiarVista('flujo')">Flujograma</button>
+          <button class="btn-tab" data-vista="checklist" onclick="cambiarVista('checklist')">Checklist</button>
+        </div>
+        <button class="btn-pill" id="btnTema" onclick="alternarTema()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          <span id="txtTema">Oscuro</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- SECCIÓN 1: FLUJOGRAMA DE USO -->
+    <section id="secFlujo" class="section-card">
+      <div class="section-head">
+        <div>
+          <p class="overline">Guía interactiva de uso</p>
+          <h2>Flujograma: Cómo funciona QuestFlow paso a paso</h2>
+          <p class="section-desc">Haz clic en cualquier bloque del flujo para inspeccionar las acciones del usuario, endpoints del backend y sincronización en Redux.</p>
+        </div>
+        <button class="btn-pill btn-primary" onclick="siguientePaso()">
+          <span>Recorrer paso a paso</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="flow-workspace">
+        <div class="flow-diagram" id="diagrama">
+          <!-- Nodo 1 -->
+          <button class="flow-node seleccionado" data-paso="0" onclick="seleccionarPaso(0)">
+            <div class="node-badge tabular">01</div>
+            <div style="flex:1; min-width:0;">
+              <div class="node-title-row">
+                <span class="node-title">Acceso, Registro e Inicio de Sesión</span>
+                <span class="node-route">/autenticacion</span>
+              </div>
+              <div class="node-sub">Creas tu cuenta o ingresas con correo y contraseña cifrada (bcrypt). Recibes JWT y perfil gamificado inicial: Nivel 1, 0 XP y Racha 0 días.</div>
+            </div>
+          </button>
+
+          <div class="connector">
+            <svg width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 1v17M3 14l5 5 5-5"/></svg>
+          </div>
+
+          <!-- Nodo 2 -->
+          <button class="flow-node" data-paso="1" onclick="seleccionarPaso(1)">
+            <div class="node-badge tabular">02</div>
+            <div style="flex:1; min-width:0;">
+              <div class="node-title-row">
+                <span class="node-title">Crear Proyecto y Vincular Equipo (Opcional)</span>
+                <span class="node-route">/proyectos</span>
+              </div>
+              <div class="node-sub">Creas un contenedor individual o grupal (eres PROPIETARIO). Opcionalmente vinculas compañeros por correo con rol MIEMBRO o ADMINISTRADOR.</div>
+            </div>
+          </button>
+
+          <div class="connector">
+            <svg width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 1v17M3 14l5 5 5-5"/></svg>
+          </div>
+
+          <!-- Nodo 3 -->
+          <button class="flow-node" data-paso="2" onclick="seleccionarPaso(2)">
+            <div class="node-badge tabular">03</div>
+            <div style="flex:1; min-width:0;">
+              <div class="node-title-row">
+                <span class="node-title">Registrar Nueva Actividad y Recompensa XP</span>
+                <span class="node-route">/actividades</span>
+              </div>
+              <div class="node-sub">Defines título, proyecto (o personal), miembro asignado, recompensa XP (+20 a +100 XP) y el tipo de actividad.</div>
+            </div>
+          </button>
+
+          <div class="decision-pill">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 12l10 10 10-10Z"/></svg>
+            Decisión: Tipo de actividad (TipoActividad)
+          </div>
+
+          <!-- Bifurcación 4A / 4B -->
+          <div class="branch-grid">
+            <button class="flow-node" data-paso="3" onclick="seleccionarPaso(3)">
+              <div class="node-badge amber tabular">4A</div>
+              <div style="flex:1; min-width:0;">
+                <div class="node-title-row">
+                  <span class="node-title">Actividad Única</span>
+                  <span class="node-route">UNICA</span>
+                </div>
+                <div class="node-sub">Con fecha límite opcional. Se completa una única vez y queda cerrada en COMPLETADA.</div>
+              </div>
+            </button>
+
+            <button class="flow-node" data-paso="4" onclick="seleccionarPaso(4)">
+              <div class="node-badge purple tabular">4B</div>
+              <div style="flex:1; min-width:0;">
+                <div class="node-title-row">
+                  <span class="node-title">Actividad Recurrente</span>
+                  <span class="node-route">RECURRENTE</span>
+                </div>
+                <div class="node-sub">Frecuencia DIARIA, SEMANAL o MENSUAL. Registra múltiples ciclos (1x, 2x, 3x...) sin cerrarse.</div>
+              </div>
+            </button>
+          </div>
+
+          <div class="connector">
+            <svg width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 1v17M3 14l5 5 5-5"/></svg>
+          </div>
+
+          <!-- Nodo 5 -->
+          <button class="flow-node" data-paso="5" onclick="seleccionarPaso(5)">
+            <div class="node-badge success tabular">05</div>
+            <div style="flex:1; min-width:0;">
+              <div class="node-title-row">
+                <span class="node-title">Completar Acción y Motor de Gamificación</span>
+                <span class="node-route">POST /completar</span>
+              </div>
+              <div class="node-sub">Guarda RegistroActividad, suma XP, recalcula Nivel (cada 100 XP), incrementa Racha diaria y desbloquea medallas con notificación Toast.</div>
+            </div>
+          </button>
+
+          <div class="loop-note">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+            Ciclo continuo en actividades RECURRENTES: vuelve al paso 4B para sumar más XP y rachas
+          </div>
+
+          <div class="connector">
+            <svg width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M8 1v17M3 14l5 5 5-5"/></svg>
+          </div>
+
+          <!-- Nodo 6 -->
+          <button class="flow-node" data-paso="6" onclick="seleccionarPaso(6)">
+            <div class="node-badge tabular">06</div>
+            <div style="flex:1; min-width:0;">
+              <div class="node-title-row">
+                <span class="node-title">Gráficos de Progreso y Ranking del Equipo</span>
+                <span class="node-route">/dashboard · /medallas</span>
+              </div>
+              <div class="node-sub">Visualizas avance por proyecto, distribución de estados, cumplimiento de cada acción individual, historial temporal y Leaderboard.</div>
+            </div>
+          </button>
+        </div>
+
+        <!-- Inspector lateral -->
+        <aside class="inspector" id="inspectorPanel" aria-live="polite"></aside>
+      </div>
+    </section>
+
+    <!-- SECCIÓN 2: CHECKLIST DE REQUERIMIENTOS -->
+    <section id="secChecklist" class="section-card">
+      <div class="section-head">
+        <div>
+          <p class="overline">Auditoría contra el enunciado del práctico</p>
+          <h2>Checklist de Requerimientos y Estado de Cumplimiento</h2>
+          <p class="section-desc">Comparativa punto por punto entre los requisitos obligatorios del proyecto, los casos de uso y los archivos reales implementados.</p>
+        </div>
+        <button class="btn-pill" onclick="marcarTodos()">Restaurar todos verificados</button>
+      </div>
+
+      <div class="summary-bar">
+        <div class="stat-box">
+          <div class="stat-label">Cumplimiento Global</div>
+          <div class="stat-val tabular" id="statPorcentaje" style="color: var(--success);">100%</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Requerimientos Cumplidos</div>
+          <div class="stat-val tabular" id="statConteo">11 / 11</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Módulos Backend NestJS</div>
+          <div class="stat-val tabular">9</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Slices Redux + Gráficas</div>
+          <div class="stat-val tabular">4 + 4</div>
+        </div>
+      </div>
+
+      <div class="progress-track" aria-label="Porcentaje de cumplimiento">
+        <div class="progress-fill" id="barraCumplimiento" style="width: 100%;"></div>
+      </div>
+
+      <div class="filters-row">
+        <div class="segmented" role="tablist" aria-label="Filtrar checklist">
+          <button class="btn-tab activo" data-cat="TODOS" onclick="filtrarChecklist('TODOS')">Todos (11)</button>
+          <button class="btn-tab" data-cat="CASO_USO" onclick="filtrarChecklist('CASO_USO')">Casos de Uso (4)</button>
+          <button class="btn-tab" data-cat="REQUISITO" onclick="filtrarChecklist('REQUISITO')">Requisitos Técnicos (3)</button>
+          <button class="btn-tab" data-cat="ARQUITECTURA" onclick="filtrarChecklist('ARQUITECTURA')">Arquitectura y UI (4)</button>
+        </div>
+        <span class="brand-sub">Haz clic en cualquier fila para alternar su verificación durante tu presentación</span>
+      </div>
+
+      <div class="checklist-grid" id="listaChecklist"></div>
+    </section>
+  </main>
+
+  <script>
+    const PASOS_FLUJO = [
+      {
+        etiqueta: 'Paso 01 · Entrada al sistema',
+        titulo: 'Registro e Inicio de Sesión (JWT)',
+        acciones: [
+          'El usuario abre la aplicación y es redirigido por RutaProtegida hacia /autenticacion si no tiene sesión.',
+          'Puede registrarse con nombre, correo y contraseña o iniciar sesión.',
+          'El backend valida credenciales con bcrypt y devuelve un JWT + estado inicial: Nivel 1, 0 XP y Racha 0d.'
+        ],
+        frontend: 'PaginaAutenticacion.jsx + useAutenticacion.js -> autenticacion.slice.js',
+        backend: 'POST /autenticacion/registro · POST /autenticacion/login · GET /autenticacion/perfil',
+        bd: 'Tabla usuarios (experiencia, nivel, racha, ultimaFechaActiva)'
+      },
+      {
+        etiqueta: 'Paso 02 · Trabajo individual o en equipo',
+        titulo: 'Creación de Proyectos y Vinculación de Miembros',
+        acciones: [
+          'En /proyectos, el usuario crea un proyecto definiendo nombre, descripción y color identificador.',
+          'Al crearse, el backend registra automáticamente al creador como PROPIETARIO en miembros_proyecto.',
+          'Desde "Vincular miembro" se agregan compañeros existentes por correo con rol MIEMBRO o ADMINISTRADOR.'
+        ],
+        frontend: 'PaginaProyectos.jsx + useProyectos.js -> proyectos.slice.js (proyecto.service.js)',
+        backend: 'POST /proyectos · GET /proyectos · POST /proyectos/:id/vincular · DELETE /proyectos/:id/miembros/:usuarioId',
+        bd: 'Tablas proyectos y miembros_proyecto (roles PROPIETARIO, ADMINISTRADOR, MIEMBRO)'
+      },
+      {
+        etiqueta: 'Paso 03 · Planificación de tareas',
+        titulo: 'Registro de Actividades y Asignación',
+        acciones: [
+          'En /actividades, se abre el modal personalizado para registrar una nueva actividad.',
+          'Se configura título, descripción, proyecto (opcional), miembro asignado (opcional) y recompensa XP.',
+          'El usuario elige entre TipoActividad.UNICA o TipoActividad.RECURRENTE usando ControlSegmentado / Selector.'
+        ],
+        frontend: 'PaginaActividades.jsx + Selector.jsx + SelectorFecha.jsx -> actividades.slice.js',
+        backend: 'POST /actividades · GET /actividades (filtros: proyectoId, usuarioId, tipo, estado)',
+        bd: 'Tabla actividades (enums TipoActividad, FrecuenciaActividad, EstadoActividad)'
+      },
+      {
+        etiqueta: 'Paso 4A · Rama de tareas puntuales',
+        titulo: 'Flujo de Actividad Única (UNICA)',
+        acciones: [
+          'Ideal para entregables con fecha límite (ej. "Subir informe final") seleccionada con el calendario personalizado SelectorFecha.',
+          'Al hacer clic en "Completar", pasa a estado COMPLETADA y otorga la recompensa XP una sola vez.',
+          'Si alguien intenta completarla nuevamente, ActividadService bloquea con BadRequestException.'
+        ],
+        frontend: 'TarjetaActividad.jsx -> boton "Completar"',
+        backend: 'ActividadService.completarActividad() valida tipo === UNICA && estado === COMPLETADA',
+        bd: 'Actualiza actividades.estado = COMPLETADA e inserta 1 registro en registros_actividad'
+      },
+      {
+        etiqueta: 'Paso 4B · Rama de hábitos continuos',
+        titulo: 'Flujo de Actividad Recurrente (RECURRENTE)',
+        acciones: [
+          'Pensada para hábitos o entregas periódicas con frecuencia DIARIA, SEMANAL o MENSUAL.',
+          'Cada vez que el usuario hace clic en "Registrar ciclo", suma un nuevo cumplimiento al historial.',
+          'Muestra el contador acumulado de ciclos realizados (ej. 1 ciclo, 2 ciclos) y sigue disponible para futuras repeticiones.'
+        ],
+        frontend: 'TarjetaActividad.jsx -> boton "Registrar ciclo" con contador de ciclos',
+        backend: 'POST /actividades/:id/completar permite múltiples ejecuciones cuando tipo === RECURRENTE',
+        bd: 'Múltiples filas acumuladas en registros_actividad asociadas al mismo actividadId'
+      },
+      {
+        etiqueta: 'Paso 05 · Núcleo de gamificación',
+        titulo: 'Cálculo Automático de XP, Nivel, Racha y Medallas',
+        acciones: [
+          'Registra la experiencia ganada en registros_actividad con marca de tiempo.',
+          'Suma XP al usuario y recalcula el nivel con la fórmula: Math.floor(experiencia / 100) + 1.',
+          'Incrementa racha si es la primera acción o un nuevo día activo; luego desbloquea medallas elegibles (50, 100, 300, 500 XP) y dispara toasts con Sonner.'
+        ],
+        frontend: 'completarActividadThunk + obtenerPerfilThunk (sincroniza medallasUsuario) + Sonner Toast',
+        backend: 'ActividadService.completarActividad() + MedallaService (4 medallas sembradas)',
+        bd: 'Actualiza usuarios y crea registros en medallas_usuario'
+      },
+      {
+        etiqueta: 'Paso 06 · Seguimiento visual',
+        titulo: 'Dashboard de 4 Gráficas y Ranking del Equipo',
+        acciones: [
+          'En /dashboard se visualiza de un vistazo el progreso mediante 4 componentes Recharts conectados a reportes.slice.js.',
+          'Incluye avance porcentual por proyecto, dona de estado de actividades, progreso de cada acción individual (+XP y ciclos) e historial diario.',
+          'En /medallas se muestran las insignias desbloqueadas/bloqueadas y el Leaderboard ordenado por experiencia.'
+        ],
+        frontend: 'PaginaDashboard.jsx (4 organismos Recharts) + PaginaMedallas.jsx',
+        backend: 'GET /reportes/general · GET /reportes/proyecto/:id · GET /medallas · GET /usuarios',
+        bd: 'Agregación en tiempo real de proyectos, actividades, registros_actividad y medallas_usuario'
+      }
+    ];
+
+    const ITEMS_CHECKLIST = [
+      {
+        id: 'cu-01',
+        codigo: 'CU-01',
+        categoria: 'CASO_USO',
+        etiquetaCat: 'Caso de Uso Oficial',
+        titulo: 'Registro e iniciar sesión',
+        evidencia: 'Autenticación completa con hash bcrypt, emisión y validación JWT mediante JwtAuthGuard, perfil protegido y persistencia de sesión en Redux + localStorage.',
+        archivos: ['backend/src/autenticacion/', 'frontend/src/paginas/autenticacion/PaginaAutenticacion.jsx', 'frontend/src/store/slices/autenticacion.slice.js'],
+        cumplido: true
+      },
+      {
+        id: 'cu-02',
+        codigo: 'CU-02',
+        categoria: 'CASO_USO',
+        etiquetaCat: 'Caso de Uso Oficial',
+        titulo: 'Registrar actividades únicas y recurrentes',
+        evidencia: 'Soporta actividades UNICA (fecha límite y cierre tras completarse) y RECURRENTE (DIARIA, SEMANAL, MENSUAL) con historial de ciclos en registros_actividad, XP, racha y medallas.',
+        archivos: ['backend/src/actividad/actividad.service.ts', 'backend/src/enums/tipo-actividad.enum.ts', 'frontend/src/paginas/actividades/PaginaActividades.jsx'],
+        cumplido: true
+      },
+      {
+        id: 'cu-03',
+        codigo: 'CU-03',
+        categoria: 'CASO_USO',
+        etiquetaCat: 'Caso de Uso Oficial',
+        titulo: 'Sistema de gestión de proyectos (permitir la vinculación de usuarios)',
+        evidencia: 'CRUD de proyectos con tabla intermedia miembros_proyecto (PROPIETARIO, ADMINISTRADOR, MIEMBRO), vinculación por correo o ID y métricas individuales por integrante.',
+        archivos: ['backend/src/proyecto/proyecto.controller.ts', 'backend/src/miembro-proyecto/', 'frontend/src/paginas/proyectos/PaginaProyectos.jsx'],
+        cumplido: true
+      },
+      {
+        id: 'cu-04',
+        codigo: 'CU-04',
+        categoria: 'CASO_USO',
+        etiquetaCat: 'Caso de Uso Oficial',
+        titulo: 'Reporte a partir de gráficas resaltando el progreso de cada acción',
+        evidencia: 'Endpoint de reportes agregados y 4 gráficas interactivas en Recharts: Avance por Proyecto, Estado de Actividades, Progreso por Acción Individual (con XP y ciclos) e Historial de Cumplimiento.',
+        archivos: ['backend/src/reporte/reporte.service.ts', 'frontend/src/componentes/organismos/GraficoProgresoAcciones.jsx', 'frontend/src/paginas/dashboard/PaginaDashboard.jsx'],
+        cumplido: true
+      },
+      {
+        id: 'req-01',
+        codigo: 'REQ-01',
+        categoria: 'REQUISITO',
+        etiquetaCat: 'Requisito Técnico',
+        titulo: 'Backend: Tecnología libre (NestJS)',
+        evidencia: 'Implementado con NestJS ^11.0.1, 9 módulos en español con funciones async/await directas y enums centralizados en backend/src/enums/.',
+        archivos: ['backend/package.json', 'backend/src/app.module.ts', 'backend/src/enums/index.ts'],
+        cumplido: true
+      },
+      {
+        id: 'req-02',
+        codigo: 'REQ-02',
+        categoria: 'REQUISITO',
+        etiquetaCat: 'Requisito Técnico',
+        titulo: 'Base de datos: Libre (obligatorio)',
+        evidencia: 'PostgreSQL (base gamificacion_db, puerto 5501, codificación UTF8) conectada mediante TypeORM ^1.1.2 con 7 entidades relacionales y siembra automática de 4 medallas.',
+        archivos: ['backend/src/app.module.ts', 'backend/src/usuario/entities/usuario.entity.ts', 'backend/src/medalla/medalla.service.ts'],
+        cumplido: true
+      },
+      {
+        id: 'req-03',
+        codigo: 'REQ-03',
+        categoria: 'REQUISITO',
+        etiquetaCat: 'Requisito Técnico',
+        titulo: 'Frontend: Implementación de Redux obligatoria',
+        evidencia: 'Store centralizado con @reduxjs/toolkit ^2.14.0 y react-redux ^9.3.1 organizado en 4 slices globales para autenticación, proyectos, actividades y reportes.',
+        archivos: ['frontend/src/store/index.js', 'frontend/src/store/slices/autenticacion.slice.js', 'frontend/src/store/slices/actividades.slice.js'],
+        cumplido: true
+      },
+      {
+        id: 'arq-01',
+        codigo: 'ARQ-01',
+        categoria: 'ARQUITECTURA',
+        etiquetaCat: 'Arquitectura Solicitada',
+        titulo: 'Servicios del frontend espejo 1-a-1 del backend (React JS)',
+        evidencia: 'Cliente HTTP centralizado con interceptor JWT + 8 servicios JS en frontend/src/servicios/ correspondientes a cada módulo de NestJS.',
+        archivos: ['frontend/src/api/cliente-api.js', 'frontend/src/servicios/actividad.service.js', 'frontend/src/servicios/proyecto.service.js'],
+        cumplido: true
+      },
+      {
+        id: 'arq-02',
+        codigo: 'ARQ-02',
+        categoria: 'ARQUITECTURA',
+        etiquetaCat: 'Arquitectura Solicitada',
+        titulo: 'Vistas modularizadas estilo Angular (JSX + lógica JS por carpeta)',
+        evidencia: 'Cada pantalla vive en su propia carpeta con archivo de vista (Pagina*.jsx) y hook de lógica/estado (use*.js) separado.',
+        archivos: ['frontend/src/paginas/dashboard/', 'frontend/src/paginas/proyectos/', 'frontend/src/paginas/actividades/'],
+        cumplido: true
+      },
+      {
+        id: 'arq-03',
+        codigo: 'ARQ-03',
+        categoria: 'ARQUITECTURA',
+        etiquetaCat: 'Arquitectura Solicitada',
+        titulo: 'Atomic Design (Átomos, Moléculas y Organismos)',
+        evidencia: 'Biblioteca de componentes reutilizables dividida en atomos/ (8), moleculas/ (4) y organismos/ (8) garantizando consistencia visual.',
+        archivos: ['frontend/src/componentes/atomos/', 'frontend/src/componentes/moleculas/', 'frontend/src/componentes/organismos/'],
+        cumplido: true
+      },
+      {
+        id: 'arq-04',
+        codigo: 'ARQ-04',
+        categoria: 'ARQUITECTURA',
+        etiquetaCat: 'Diseño Apple & Skills',
+        titulo: 'UI Apple Design a medida, modo oscuro, sin emojis ni HTML genérico',
+        evidencia: 'Controles personalizados (Selector.jsx, SelectorFecha.jsx, ControlSegmentado.jsx, ModalBase.jsx), notificaciones Sonner, tabular-nums, modo oscuro en cabecera y barra lateral fija independiente del scroll.',
+        archivos: ['frontend/src/componentes/atomos/Selector.jsx', 'frontend/src/componentes/atomos/SelectorFecha.jsx', 'frontend/src/componentes/organismos/BarraLateral.jsx'],
+        cumplido: true
+      }
+    ];
+
+    let pasoActivo = 0;
+    let filtroCategoria = 'TODOS';
+    const estadoChecks = ITEMS_CHECKLIST.map((item) => item.cumplido);
+
+    function renderInspector() {
+      const p = PASOS_FLUJO[pasoActivo];
+      const panel = document.getElementById('inspectorPanel');
+      panel.innerHTML = `
+        <span class="inspector-tag">${p.etiqueta}</span>
+        <h3>${p.titulo}</h3>
+
+        <div class="inspector-box">
+          <div class="inspector-label">Qué ocurre en este paso</div>
+          <ul class="inspector-list">
+            ${p.acciones.map((a) => `<li>${a}</li>`).join('')}
+          </ul>
+        </div>
+
+        <div class="inspector-box">
+          <div class="inspector-label">Capa Frontend (React + Redux)</div>
+          <span class="code-chip">${p.frontend}</span>
+        </div>
+
+        <div class="inspector-box">
+          <div class="inspector-label">Endpoints Backend (NestJS)</div>
+          <span class="code-chip">${p.backend}</span>
+        </div>
+
+        <div class="inspector-box">
+          <div class="inspector-label">Impacto en Base de Datos (PostgreSQL)</div>
+          <span class="code-chip">${p.bd}</span>
+        </div>
+
+        <div class="inspector-nav">
+          <button class="btn-pill" onclick="anteriorPaso()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+            Anterior
+          </button>
+          <span class="brand-sub tabular" style="align-self:center;">Paso ${pasoActivo + 1} de ${PASOS_FLUJO.length}</span>
+          <button class="btn-pill btn-primary" onclick="siguientePaso()">
+            Siguiente
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
+          </button>
+        </div>
+      `;
+    }
+
+    function seleccionarPaso(indice) {
+      pasoActivo = indice;
+      document.querySelectorAll('.flow-node').forEach((n) => {
+        n.classList.toggle('seleccionado', Number(n.dataset.paso) === indice);
+      });
+      renderInspector();
+    }
+
+    function siguientePaso() {
+      seleccionarPaso((pasoActivo + 1) % PASOS_FLUJO.length);
+    }
+
+    function anteriorPaso() {
+      seleccionarPaso((pasoActivo - 1 + PASOS_FLUJO.length) % PASOS_FLUJO.length);
+    }
+
+    function renderChecklist() {
+      const lista = document.getElementById('listaChecklist');
+      const filtrados = ITEMS_CHECKLIST
+        .map((item, idx) => ({ ...item, idx }))
+        .filter((item) => filtroCategoria === 'TODOS' || item.categoria === filtroCategoria);
+
+      lista.innerHTML = filtrados.map((item) => {
+        const marcado = estadoChecks[item.idx];
+        return `
+          <div class="check-item ${marcado ? 'marcado' : ''}" onclick="alternarCheck(${item.idx})" role="checkbox" aria-checked="${marcado}" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();alternarCheck(${item.idx});}">
+            <div class="checkbox-box">
+              ${marcado ? '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>' : ''}
+            </div>
+            <div class="check-body">
+              <div class="check-top">
+                <span class="check-code">${item.codigo}</span>
+                <span class="check-cat">${item.etiquetaCat}</span>
+                <span class="status-pill ${marcado ? 'ok' : 'pend'}">
+                  ${marcado ? 'CUMPLIDO' : 'PENDIENTE REVISIÓN'}
+                </span>
+              </div>
+              <p class="check-title">${item.titulo}</p>
+              <p class="check-evidence">${item.evidencia}</p>
+              <div class="files-wrap">
+                ${item.archivos.map((f) => `<span class="code-chip">${f}</span>`).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      const cumplidos = estadoChecks.filter(Boolean).length;
+      const total = estadoChecks.length;
+      const pct = Math.round((cumplidos / total) * 100);
+      document.getElementById('statPorcentaje').textContent = pct + '%';
+      document.getElementById('statConteo').textContent = `${cumplidos} / ${total}`;
+      document.getElementById('barraCumplimiento').style.width = pct + '%';
+    }
+
+    function alternarCheck(idx) {
+      estadoChecks[idx] = !estadoChecks[idx];
+      renderChecklist();
+    }
+
+    function marcarTodos() {
+      for (let i = 0; i < estadoChecks.length; i++) estadoChecks[i] = true;
+      renderChecklist();
+    }
+
+    function filtrarChecklist(cat) {
+      filtroCategoria = cat;
+      document.querySelectorAll('[data-cat]').forEach((btn) => {
+        btn.classList.toggle('activo', btn.dataset.cat === cat);
+      });
+      renderChecklist();
+    }
+
+    function cambiarVista(vista) {
+      document.querySelectorAll('[data-vista]').forEach((btn) => {
+        btn.classList.toggle('activo', btn.dataset.vista === vista);
+      });
+      document.getElementById('secFlujo').classList.toggle('oculto', vista === 'checklist');
+      document.getElementById('secChecklist').classList.toggle('oculto', vista === 'flujo');
+    }
+
+    function alternarTema() {
+      const oscuro = document.documentElement.classList.toggle('oscuro');
+      document.getElementById('txtTema').textContent = oscuro ? 'Claro' : 'Oscuro';
+    }
+
+    renderInspector();
+    renderChecklist();
+  </script>
+</body>
+</html>
